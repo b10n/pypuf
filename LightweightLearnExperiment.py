@@ -39,8 +39,8 @@ for iteration in range(numAttackedInstances):
     #If you want to actually simulate the attack set skipActualOptimizeLearning to False!
     meta = LightweightMetaLearner(instance, training_set = tools.TrainingSet(instance=instance, N=trainingSetSize), 
                                   validation_set = tools.TrainingSet(instance=instance, N=5000), maxNumberOptimizingTrials = -1,
-                                  skipActualOptimizeLearning = True)
-    #numOfInitialTrials, numOfOptiTrials, initialModelAccuracy, optimizedModelAccuracy  
+                                  skipActualOptimizeLearning = False)
+    #numOfInitialTrials, numOfOptiTrials, initialModelAccuracy, optimizedModelAccuracy
     results[iteration, :] =  meta.learn()
     print('--- ' + str(results[iteration, 4]))
     with open(filename, 'wb') as f:
