@@ -9,7 +9,7 @@ from numpy.random import RandomState
 from numpy.linalg import norm
 from pypuf.learner.base import Learner
 from pypuf.simulation.arbiter_based.ltfarray import LTFArray
-from pypuf.tools import compare_functions
+from pypuf.tools import compare_functions, append_last
 
 
 class LogisticRegression(Learner):
@@ -51,7 +51,7 @@ class LogisticRegression(Learner):
             :param eta_minus: float
             :param eta_plus: float
             """
-            self.n = n = model.n
+            self.n = n = model.n if model.bias is None else model.n + 1
             self.k = k = model.k
 
             self.eta_minus = eta_minus
@@ -143,10 +143,7 @@ class LogisticRegression(Learner):
 
 
         if self.bias:
-            s = self.transformed_challenges.shape 
-            newTransformOut = ones((s[0], s[1] , s[2]+1)) 
-            newTransformOut[:, :, :-1] = self.transformed_challenges[:, :, :]
-            self.transformed_challenges = newTransformOut
+            s = self.transformed_challenges = append_last(self.transformed_challenges, 1)
 
         #assert self.n == len(self.training_set.challenges[0]) why do we need this? It does not work with bias=True
 
@@ -175,7 +172,7 @@ class LogisticRegression(Learner):
         """
 
         # compute model responses
-        model_responses = model.ltf_eval(self.transformed_challenges)
+        model_responses = model.ltf_eval(self.transformed_challenges[:,:,:-1])  # cut off that bias 1
         combined_model_responses = self.combiner(model_responses)
         self.sign_combined_model_responses = sign(combined_model_responses)
 
@@ -274,7 +271,7 @@ class LogisticRegression(Learner):
                                                  self.weights_prng),
             transform=self.transformation,
             combiner=self.combiner,
-            bias=self.bias,
+            bias=0.0,
         )
 
         if init_weight_array is not None:

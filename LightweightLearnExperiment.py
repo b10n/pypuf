@@ -30,10 +30,10 @@ with open(filename, 'wb') as f:
 for iteration in range(numAttackedInstances):
     print('+++++++++++++++ Running Experiment Iteration #' + str(iteration) + ' ++++++++++++++++-')
     instance = LTFArray(
-        weight_array=LTFArray.normal_weights(n=65, k=4),
+        weight_array=LTFArray.normal_weights(n=64, k=4),
         transform=LTFArray.transform_lightweight_secure_original,
         combiner=LTFArray.combiner_xor,
-        bias =  True
+        bias=0.0,
     )
 
     #If you want to actually simulate the attack set skipActualOptimizeLearning to False!

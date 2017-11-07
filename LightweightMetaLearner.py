@@ -86,9 +86,9 @@ class LightweightMetaLearner():
         #shiftMatrix = loaded['shiftMatrix']
 
 
-        if self.puf_instance.n == 65:
+        if self.puf_instance.n == 64:
             loaded = sio.loadmat('lwShiftMatrix_64_10')
-        elif self.puf_instance.n == 129:
+        elif self.puf_instance.n == 128:
             loaded = sio.loadmat('lwShiftMatrix_128_10')
         else:
             sys.exit('Only 64 and 128 are valid for the number of stages.')
