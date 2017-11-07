@@ -12,7 +12,7 @@ import datetime
 
 
 
-numXors = 5
+numXors = 4
 numStages = 64
 numAttackedInstances = 200
 trainingSetSize = 100000
@@ -30,7 +30,7 @@ with open(filename, 'wb') as f:
 for iteration in range(numAttackedInstances):
     print('+++++++++++++++ Running Experiment Iteration #' + str(iteration) + ' ++++++++++++++++-')
     instance = LTFArray(
-        weight_array=LTFArray.normal_weights(n=64, k=4, random_instance=RandomState(seed=0xc0ffee)),
+        weight_array=LTFArray.normal_weights(n=numStages, k=numXors, random_instance=RandomState(seed=0xc0ffee)),
         transform=LTFArray.transform_lightweight_secure_original,
         combiner=LTFArray.combiner_xor,
         bias=0.0,
