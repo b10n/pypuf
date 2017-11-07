@@ -208,7 +208,7 @@ class LightweightMetaLearner():
                 goodCorrelation, correlationList = self.evalModelCorrelation(initialModel)                                          
                 print('Pre-Optimizing Correlation: ' + str(correlationList))
 
-                optimizedModel = lr_learner.learn(initWeightArray = weightMatrix)
+                optimizedModel = lr_learner.learn(init_weight_array = weightMatrix)
                 optimizedModelAccuracy = self.evalValidationSetAccuracy(optimizedModel)
 
                 print('InitModel acc: %f\t Shifted Acc: %f\t New Acc: %f\n' % (initialModelAccuracy, accuracyList[currentIndex],  optimizedModelAccuracy))
