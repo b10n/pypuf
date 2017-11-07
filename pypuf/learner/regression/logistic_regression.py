@@ -131,7 +131,7 @@ class LogisticRegression(Learner):
         self.weights_sigma = weights_sigma
         self.weights_prng = weights_prng
         self.iteration_limit = iteration_limit
-        self.convergence_decimals = 3
+        self.convergence_decimals = 2
         self.sign_combined_model_responses = None
         self.sigmoid_derivative = full(self.training_set.N, None, dtype('float64'))
         self.transformation = transformation
