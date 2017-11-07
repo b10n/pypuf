@@ -7,6 +7,7 @@ import pypuf.tools
 from itertools import permutations
 import numpy as np
 import sys
+from numpy.random import RandomState
 
 
 #Print the LR debug/ progress messages partially.
@@ -103,7 +104,8 @@ class LightweightMetaLearner():
             transformation=LTFArray.transform_lightweight_secure_original,
             combiner=LTFArray.combiner_xor,
             logger = Logger(),
-            iteration_limit = 400
+            iteration_limit = 400,
+            weights_prng=RandomState(0x1),
             )
 
 

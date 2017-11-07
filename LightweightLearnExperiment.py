@@ -6,7 +6,7 @@ import pypuf.tools
 from  LightweightMetaLearner import LightweightMetaLearner
 
 import numpy as np
-
+from numpy.random import RandomState
 import datetime
 
 
@@ -30,16 +30,20 @@ with open(filename, 'wb') as f:
 for iteration in range(numAttackedInstances):
     print('+++++++++++++++ Running Experiment Iteration #' + str(iteration) + ' ++++++++++++++++-')
     instance = LTFArray(
-        weight_array=LTFArray.normal_weights(n=64, k=4),
+        weight_array=LTFArray.normal_weights(n=64, k=4, random_instance=RandomState(seed=0xc0ffee)),
         transform=LTFArray.transform_lightweight_secure_original,
         combiner=LTFArray.combiner_xor,
         bias=0.0,
     )
 
     #If you want to actually simulate the attack set skipActualOptimizeLearning to False!
-    meta = LightweightMetaLearner(instance, training_set = tools.TrainingSet(instance=instance, N=trainingSetSize), 
-                                  validation_set = tools.TrainingSet(instance=instance, N=5000), maxNumberOptimizingTrials = -1,
-                                  skipActualOptimizeLearning = False)
+    meta = LightweightMetaLearner(
+        instance,
+        training_set=tools.TrainingSet(instance=instance, N=trainingSetSize, random_instance=RandomState(seed=0xdead)),
+        validation_set=tools.TrainingSet(instance=instance, N=5000, random_instance=RandomState(seed=0xbeef)),
+        maxNumberOptimizingTrials=-1,
+        skipActualOptimizeLearning = False,
+    )
     #numOfInitialTrials, numOfOptiTrials, initialModelAccuracy, optimizedModelAccuracy
     results[iteration, :] =  meta.learn()
     print('--- ' + str(results[iteration, 4]))
