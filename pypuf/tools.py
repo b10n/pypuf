@@ -112,6 +112,10 @@ def approx_dist(instance1, instance2, num, random_instance=RandomState()):
     return (num - count_nonzero(instance1.eval(inputs) == instance2.eval(inputs))) / num
 
 
+def set_dist(instance, set):
+    return (set.N - count_nonzero(instance.eval(set.challenges) == set.responses)) / set.N
+
+
 def approx_fourier_coefficient(s, training_set):
     """
     Approximate the Fourier coefficient of a function on the subset `s`
