@@ -21,7 +21,6 @@ class CorrelationAttack(Learner):
     def __init__(self, n, k,
                  training_set, validation_set,
                  weights_mu=0, weights_sigma=1, weights_prng=RandomState(),
-                 initial_model_iteration_limit=100,
                  lr_iteration_limit=1000,
                  logger=None, bias=False):
         self.n = n
@@ -35,7 +34,6 @@ class CorrelationAttack(Learner):
         self.weights_prng = weights_prng
 
         self.logger = logger
-        self.initial_model_iteration_limit = initial_model_iteration_limit
         self.bias = bias
 
         self.lr_learner = LogisticRegression(
@@ -63,27 +61,13 @@ class CorrelationAttack(Learner):
         )['shiftOverviewData'][:, :, 0].astype('int64')
 
     def learn(self):
-        # Try to find an initial model with accuracy better than the lower bound.
-        self.initial_accuracy = .5
-        self.initial_iterations = 0
-        while self.initial_accuracy < self.OPTIMIZATION_ACCURACY_LOWER_BOUND and \
-                        self.initial_iterations < self.initial_model_iteration_limit:
-            initial_model = self.lr_learner.learn()
-            self.initial_accuracy = 1 - set_dist(initial_model, self.validation_set)
+        # Find any model
+        initial_model = self.lr_learner.learn()
+        self.initial_accuracy = 1 - set_dist(initial_model, self.validation_set)
+        self.initial_iterations = self.lr_learner.iteration_count
 
         self.best_model = initial_model
         self.best_accuracy = self.initial_accuracy
-
-        if self.initial_accuracy < self.OPTIMIZATION_ACCURACY_LOWER_BOUND:
-            self.logger.debug('Model accuracy on the validation %.2f set after %i learning attempts still below %.2f, '
-                              'giving up' % (self.initial_accuracy, self.initial_model_iteration_limit,
-                                             self.OPTIMIZATION_ACCURACY_LOWER_BOUND))
-            return initial_model
-
-        if self.initial_accuracy > self.OPTIMIZATION_ACCURACY_UPPER_BOUND:
-            self.logger.debug('We don\'t need to start the optimization as we already have a model with validation set '
-                              'accuracy of %.2f' % self.initial_accuracy)
-            return initial_model
 
         # Try all permutations with high initial accuracy and see if any of them lead to a good finial result
         adopted_weights = self.find_high_accuracy_weight_permutations(initial_model.weight_array, self.initial_accuracy)
