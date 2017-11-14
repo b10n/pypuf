@@ -69,8 +69,10 @@ class ExperimentCorrelationAttack(Experiment):
         assert self.model is not None
 
         self.result_logger.info(
-            # seed_instance  seed_model n      k      N      time   initial_iterations initial_accuracy best_accuracy accuracy model values
-            '0x%x\t'        '0x%x\t'   '%i\t' '%i\t' '%i\t' '%f\t' '%i\t'             '%f\t'           '%f\t'        '%f\t'  '%s',
+            # seed_instance  seed_model n      k      N      time   initial_iterations initial_accuracy best_accuracy
+            '0x%x\t'        '0x%x\t'   '%i\t' '%i\t' '%i\t' '%f\t' '%i\t'             '%f\t'           '%f\t'
+                # accuracy model values  best_iteration
+                '%f\t'    '%s'          '%i',
             self.seed_instance,
             self.seed_model,
             self.n,
@@ -86,6 +88,6 @@ class ExperimentCorrelationAttack(Experiment):
                 min(10000, 2 ** self.n),
                 random_instance=self.distance_prng,
             ),
-            ','.join(map(str, self.model.weight_array.flatten() / norm(self.model.weight_array.flatten())))
-
+            ','.join(map(str, self.model.weight_array.flatten() / norm(self.model.weight_array.flatten()))),
+            self.learner.best_iteration,
         )
