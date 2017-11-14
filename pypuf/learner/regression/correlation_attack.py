@@ -16,7 +16,7 @@ class CorrelationAttack(Learner):
 
     OPTIMIZATION_ACCURACY_LOWER_BOUND = .65
     OPTIMIZATION_ACCURACY_UPPER_BOUND = .95
-    OPTIMIZATION_ACCURACY_GOAL = .99
+    OPTIMIZATION_ACCURACY_GOAL = .98
 
     def __init__(self, n, k,
                  training_set, validation_set,
