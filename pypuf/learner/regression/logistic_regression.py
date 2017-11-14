@@ -3,7 +3,7 @@ Module for Learning Arbiter PUFs with Logistic Regression.
 Heavily based on the work of Rührmair, Ulrich, et al. "Modeling attacks on physical unclonable functions." Proceedings
 of the 17th ACM conference on Computer and communications security. ACM, 2010.
 """
-from numpy import sign, dot, exp, array, seterr, minimum, full, amin, amax, dtype
+from numpy import sign, dot, exp, minimum, dtype, sign, dot, exp, array, seterr, minimum, abs, full, amin, amax, ones
 from numpy import abs as np_abs
 from numpy.random import RandomState
 from numpy.linalg import norm
@@ -107,7 +107,7 @@ class LogisticRegression(Learner):
             return self.step
 
     def __init__(self, t_set, n, k, transformation=LTFArray.transform_id, combiner=LTFArray.combiner_xor, weights_mu=0,
-                 weights_sigma=1, weights_prng=RandomState(), logger=None):
+                 weights_sigma=1, weights_prng=RandomState(), logger=None, iteration_limit=10000, bias=False):
         """
         Initialize a LTF Array Logistic Regression Learner for the specified LTF Array.
 
@@ -130,8 +130,8 @@ class LogisticRegression(Learner):
         self.weights_mu = weights_mu
         self.weights_sigma = weights_sigma
         self.weights_prng = weights_prng
-        self.iteration_limit = 10000
-        self.convergence_decimals = 2
+        self.iteration_limit = iteration_limit
+        self.convergence_decimals = 3
         self.sign_combined_model_responses = None
         self.sigmoid_derivative = full(self.training_set.N, None, dtype('float64'))
         self.transformation = transformation
@@ -139,8 +139,16 @@ class LogisticRegression(Learner):
         self.transformed_challenges = self.transformation(self.training_set.challenges, k)
         self.converged = False
         self.logger = logger
+        self.bias = True
 
-        assert self.n == len(self.training_set.challenges[0])
+
+        if self.bias:
+            s = self.transformed_challenges.shape 
+            newTransformOut = ones((s[0], s[1] , s[2]+1)) 
+            newTransformOut[:, :, :-1] = self.transformed_challenges[:, :, :]
+            self.transformed_challenges = newTransformOut
+
+        #assert self.n == len(self.training_set.challenges[0]) why do we need this? It does not work with bias=True
 
     @property
     def training_set(self):
@@ -233,7 +241,7 @@ class LogisticRegression(Learner):
         ])
         return ret
 
-    def learn(self):
+    def learn(self, init_weight_array=None):
         """
         Compute a model according to the given LTF Array parameters and training set.
         Note that this function can take long to return.
@@ -253,7 +261,7 @@ class LogisticRegression(Learner):
                     self.iteration_count,
                     distance,
                     norm(updater.step),
-                    ','.join(map(str, model.weight_array.flatten()))
+                    0#','.join(map(str, model.weight_array.flatten()))
                 )
             )
 
@@ -266,7 +274,11 @@ class LogisticRegression(Learner):
                                                  self.weights_prng),
             transform=self.transformation,
             combiner=self.combiner,
+            bias=self.bias,
         )
+
+        if init_weight_array is not None:
+            model.weight_array = init_weight_array
 
         updater = self.RPropModelUpdate(model)
         converged = False

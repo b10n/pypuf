@@ -273,6 +273,9 @@ class TrainingSet():
                                 PRNG which is used to draft challenges.
         """
         self.instance = instance
-        self.challenges = sample_inputs(instance.n, N, random_instance=random_instance)
+        n = instance.n
+        if instance.bias:
+            n = n - 1
+            self.challenges = array(list(sample_inputs(instance.n, N, random_instance=random_instance)))
         self.responses = instance.eval(self.challenges)
         self.N = N
