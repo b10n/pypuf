@@ -70,6 +70,10 @@ class CorrelationAttack(Learner):
         self.best_model = initial_model
         self.best_accuracy = self.initial_accuracy
 
+        if self.initial_accuracy < self.OPTIMIZATION_ACCURACY_LOWER_BOUND:
+            self.logger.debug('initial learning below threshold, aborting')
+            return initial_model
+
         # Try all permutations with high initial accuracy and see if any of them lead to a good finial result
         adopted_weights = self.find_high_accuracy_weight_permutations(initial_model.weight_array, self.initial_accuracy)
         self.logger.debug('Trying %i permuted weights.' % len(adopted_weights))
