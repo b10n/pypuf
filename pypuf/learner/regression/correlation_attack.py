@@ -55,7 +55,7 @@ class CorrelationAttack(Learner):
         self.best_iteration = 0
 
         assert n in (64, 128), 'Correlation attack for %i bit is currently not supported.' % n
-        assert validation_set.N >= 2000, 'Validation set should contain at least 2000 challenges'
+        assert validation_set.N >= 500, 'Validation set should contain at least 500 challenges'
 
         self.correlation_permutations = loadmat(
             'correlation_permutations_lightweight_secure_original_%i_10.mat' % n
