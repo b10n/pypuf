@@ -117,7 +117,7 @@ class CorrelationAttack(Learner):
                 )
 
         # return the 4k permutations with the highest initial accuracy
-        high_accuracy_permutations.sort(key=lambda x: x['accuracy'])
+        high_accuracy_permutations.sort(key=lambda x: -x['accuracy'])
         return [ item['weights'] for item in high_accuracy_permutations ][:4 * self.k]
 
     def adopt_weights(self, weights, permutation):
