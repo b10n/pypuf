@@ -72,7 +72,7 @@ class ExperimentCorrelationAttack(Experiment):
             # seed_instance  seed_model n      k      N      time   initial_iterations initial_accuracy best_accuracy
             '0x%x\t'        '0x%x\t'   '%i\t' '%i\t' '%i\t' '%f\t' '%i\t'             '%f\t'           '%f\t'
                 # accuracy model values  best_iteration
-                '%f\t'    '%s'          '%i',
+                '%f\t'    '%s\t'        '%i',
             self.seed_instance,
             self.seed_model,
             self.n,
