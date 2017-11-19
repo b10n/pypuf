@@ -88,7 +88,7 @@ def append_last(arr, item):
     # the lowest level should contain one item
     dimension[-1] = 1
     # create an array white shape(array) where the lowest level contains only one item
-    item_arr = full(dimension, item)
+    item_arr = full(dimension, item, dtype=RESULT_TYPE)
     # the item should be appended at the lowest level
     axis = len(dimension) - 1
     return append(arr, item_arr, axis=axis)
