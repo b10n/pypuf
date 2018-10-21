@@ -104,6 +104,8 @@ class CorrelationAttack(Learner):
             initial_model = self.best_model
 
         self.logger.debug('After trying all permutations, we found a model with accuracy %.2f.' % self.best_accuracy)
+        self.lr_learner.convergence_decimals = 2
+        self.best_model = self.lr_learner.learn(init_weight_array=self.best_model.weight_array)
         return self.best_model
 
     def find_high_accuracy_weight_permutations(self, weights, threshold):
