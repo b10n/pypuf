@@ -55,7 +55,7 @@ class CorrelationAttack(Learner):
         self.best_iteration = 0
 
         assert n in (64, 128), 'Correlation attack for %i bit is currently not supported.' % n
-        assert validation_set.N >= 500, 'Validation set should contain at least 500 challenges'
+        assert validation_set.N >= 200, 'Validation set should contain at least 200 challenges'
 
         self.correlation_permutations = loadmat(
             'correlation_permutations_lightweight_secure_original_%i_10.mat' % n
@@ -63,6 +63,7 @@ class CorrelationAttack(Learner):
 
     def learn(self):
         # Find any model
+        self.lr_learner.convergence_decimals = 1  # converge fast, we refine accuracy later
         initial_model = self.lr_learner.learn()
         self.initial_accuracy = 1 - set_dist(initial_model, self.validation_set)
         self.initial_iterations = self.lr_learner.iteration_count
@@ -74,23 +75,33 @@ class CorrelationAttack(Learner):
             self.logger.debug('initial learning below threshold, aborting')
             return initial_model
 
-        # Try all permutations with high initial accuracy and see if any of them lead to a good finial result
-        adopted_weights = self.find_high_accuracy_weight_permutations(initial_model.weight_array, self.initial_accuracy)
-        self.logger.debug('Trying %i permuted weights.' % len(adopted_weights))
-        for (iteration, weights) in enumerate(adopted_weights):
-            model = self.lr_learner.learn(init_weight_array=weights)
-            accuracy = 1 - set_dist(model, self.validation_set)
-            self.logger.debug('With a permutation, after restarting the learning we achieved accuracy %.2f!' % accuracy)
-            if accuracy > self.best_accuracy:
-                self.best_model = model
-                self.best_accuracy = accuracy
-                self.best_iteration = iteration + 1
-            else:
-                self.logger.debug('Learning after permuting lead to accuracy %.2f, no improvement :-(' % accuracy)
-            if accuracy > self.OPTIMIZATION_ACCURACY_GOAL:
-                self.logger.debug('Found a model with accuracy better than %.2f, aborting.' %
-                                  self.OPTIMIZATION_ACCURACY_GOAL)
-                return model
+        for i in range(5):
+            # Try all permutations with high initial accuracy and see if any of them lead to a good finial result
+            adopted_weights = self.find_high_accuracy_weight_permutations(
+                initial_model.weight_array,
+                0.075 + 0.85 * self.initial_accuracy  # allow some accuracy loss by permuting
+                                                      # the higher the initial accuracy, the higher the loss we allow
+                                                      # result will never be below 0.925
+            )
+            self.logger.debug('Trying %i permuted weights.' % len(adopted_weights))
+            for (iteration, weights) in enumerate(adopted_weights):
+                model = self.lr_learner.learn(init_weight_array=weights)
+                accuracy = 1 - set_dist(model, self.validation_set)
+                self.logger.debug('With a permutation, after restarting the learning we achieved accuracy %.2f!' % accuracy)
+                if accuracy > self.best_accuracy:
+                    self.best_model = model
+                    self.best_accuracy = accuracy
+                    self.best_iteration = (i * iteration) + 1
+                else:
+                    self.logger.debug('Learning after permuting lead to accuracy %.2f, no improvement :-(' % accuracy)
+                if accuracy > self.OPTIMIZATION_ACCURACY_GOAL:
+                    self.logger.debug('Found a model with accuracy better than %.2f, refine accuracy then abort.' %
+                                      self.OPTIMIZATION_ACCURACY_GOAL)
+                    self.lr_learner.convergence_decimals = 2
+                    model = self.lr_learner.learn(init_weight_array=model.weight_array)
+                    return model
+
+            initial_model = self.best_model
 
         self.logger.debug('After trying all permutations, we found a model with accuracy %.2f.' % self.best_accuracy)
         return self.best_model
@@ -118,7 +129,7 @@ class CorrelationAttack(Learner):
 
         # return the 4k permutations with the highest initial accuracy
         high_accuracy_permutations.sort(key=lambda x: -x['accuracy'])
-        return [ item['weights'] for item in high_accuracy_permutations ][:4 * self.k]
+        return [ item['weights'] for item in high_accuracy_permutations ][:10]
 
     def adopt_weights(self, weights, permutation):
         adopted_weights = empty(weights.shape)
