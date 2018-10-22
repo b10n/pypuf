@@ -96,12 +96,15 @@ class CorrelationAttack(Learner):
                     self.best_iteration = (self.rounds * iteration) + 1
                 else:
                     self.logger.debug('Learning after permuting lead to accuracy %.2f, no improvement :-(' % accuracy)
-                if accuracy > self.OPTIMIZATION_ACCURACY_GOAL:
-                    self.logger.debug('Found a model with accuracy better than %.2f, refine accuracy then abort.' %
-                                      self.OPTIMIZATION_ACCURACY_GOAL)
+                if accuracy > 0.075 + 0.85 * self.OPTIMIZATION_ACCURACY_GOAL:
                     self.lr_learner.convergence_decimals = 2
                     model = self.lr_learner.learn(init_weight_array=model.weight_array)
-                    return model
+                    accuracy = 1 - set_dist(model, self.validation_set)
+                    self.lr_learner.convergence_decimals = 1
+                    if accuracy > self.OPTIMIZATION_ACCURACY_GOAL:
+                        self.logger.debug('Found a model with accuracy better than %.2f, refine accuracy then abort.' %
+                                          self.OPTIMIZATION_ACCURACY_GOAL)
+                        return model
 
             initial_model = self.best_model
 

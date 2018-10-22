@@ -72,7 +72,7 @@ class ExperimentCorrelationAttack(Experiment):
             # seed_instance  seed_model n      k      N      time   initial_iterations initial_accuracy best_accuracy
             '0x%x\t'        '0x%x\t'   '%i\t' '%i\t' '%i\t' '%f\t' '%i\t'             '%f\t'           '%f\t'
                 # accuracy model values  best_iteration  rounds
-                '%f\t'    '%s\t'        '%i'              '%i',
+                '%f\t'    '%s\t'        '%i\t'              '%i',
             self.seed_instance,
             self.seed_model,
             self.n,
@@ -88,7 +88,8 @@ class ExperimentCorrelationAttack(Experiment):
                 min(10000, 2 ** self.n),
                 random_instance=self.distance_prng,
             ),
-            ','.join(map(str, self.model.weight_array.flatten() / norm(self.model.weight_array.flatten()))),
+            #','.join(map(str, self.model.weight_array.flatten() / norm(self.model.weight_array.flatten()))),
+            '',
             self.learner.best_iteration,
-            self.learner.rounds,
+            self.learner.rounds + 1,
         )
