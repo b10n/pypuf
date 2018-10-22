@@ -93,7 +93,9 @@ class CorrelationAttack(Learner):
                 model = self.lr_learner.learn(init_weight_array=weights)
                 accuracy = 1 - set_dist(model, self.validation_set)
                 self.logger.debug('With a permutation, after restarting the learning we achieved accuracy %.2f!' % accuracy)
-                if accuracy > self.best_accuracy:
+                if accuracy > 0.2 + 0.8 * self.best_accuracy:  # demand some "substantial" improvement of accuracy
+                                                               # what substantial means becomes weaker as we approach
+                                                               # perfect accuracy
                     self.best_model = model
                     model_improved = True
                     self.best_accuracy = accuracy
