@@ -77,7 +77,10 @@ class CorrelationAttack(Learner):
             return initial_model
 
         self.rounds = 0
-        for self.rounds in range(5):
+        model_improved = True
+        while self.rounds < 5 and model_improved:
+            self.rounds += 1
+            model_improved = False
             # Try all permutations with high initial accuracy and see if any of them lead to a good finial result
             adopted_weights = self.find_high_accuracy_weight_permutations(
                 initial_model.weight_array,
@@ -92,10 +95,12 @@ class CorrelationAttack(Learner):
                 self.logger.debug('With a permutation, after restarting the learning we achieved accuracy %.2f!' % accuracy)
                 if accuracy > self.best_accuracy:
                     self.best_model = model
+                    model_improved = True
                     self.best_accuracy = accuracy
                     self.best_iteration = (self.rounds * iteration) + 1
                 else:
                     self.logger.debug('Learning after permuting lead to accuracy %.2f, no improvement :-(' % accuracy)
+
                 if accuracy > 0.075 + 0.85 * self.OPTIMIZATION_ACCURACY_GOAL:
                     self.lr_learner.convergence_decimals = 2
                     model = self.lr_learner.learn(init_weight_array=model.weight_array)
@@ -104,6 +109,7 @@ class CorrelationAttack(Learner):
                     if accuracy > self.OPTIMIZATION_ACCURACY_GOAL:
                         self.logger.debug('Found a model with accuracy better than %.2f, refine accuracy then abort.' %
                                           self.OPTIMIZATION_ACCURACY_GOAL)
+                        self.best_model = model
                         return model
 
             initial_model = self.best_model
