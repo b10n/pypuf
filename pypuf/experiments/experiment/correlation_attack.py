@@ -77,7 +77,7 @@ class ExperimentCorrelationAttack(Experiment):
             self.seed_model,
             self.n,
             self.k,
-            self.N,
+            self.learner.validation_set.N + self.learner.training_set.N,
             self.measured_time,
             self.learner.initial_iterations,
             self.learner.initial_accuracy,
