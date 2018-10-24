@@ -64,7 +64,6 @@ class CorrelationAttack(Learner):
 
     def learn(self):
         # Find any model
-        self.lr_learner.convergence_decimals = 1  # converge fast, we refine accuracy later
         initial_model = self.lr_learner.learn()
         self.initial_accuracy = 1 - set_dist(initial_model, self.validation_set)
         self.initial_iterations = self.lr_learner.iteration_count
@@ -76,6 +75,7 @@ class CorrelationAttack(Learner):
             self.logger.debug('initial learning below threshold, aborting')
             return initial_model
 
+        self.lr_learner.convergence_decimals = 1  # converge fast, we refine accuracy later
         self.rounds = 0
         model_improved = True
         while self.rounds < 5 and model_improved:
