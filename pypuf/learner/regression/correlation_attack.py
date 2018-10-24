@@ -78,7 +78,7 @@ class CorrelationAttack(Learner):
         self.lr_learner.convergence_decimals = 1  # converge fast, we refine accuracy later
         self.rounds = 0
         model_improved = True
-        while self.rounds < 2 and model_improved:
+        while self.rounds < 1 and model_improved:
             self.rounds += 1
             model_improved = False
             # Try all permutations with high initial accuracy and see if any of them lead to a good finial result
@@ -144,7 +144,7 @@ class CorrelationAttack(Learner):
 
         # return the 4k permutations with the highest initial accuracy
         high_accuracy_permutations.sort(key=lambda x: -x['accuracy'])
-        return [ item['weights'] for item in high_accuracy_permutations ][:self.k]
+        return [ item['weights'] for item in high_accuracy_permutations ][:2*self.k]
 
     def adopt_weights(self, weights, permutation):
         adopted_weights = empty(weights.shape)
