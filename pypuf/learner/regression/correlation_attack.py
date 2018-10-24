@@ -76,6 +76,10 @@ class CorrelationAttack(Learner):
             self.logger.debug('initial learning below threshold, aborting')
             return initial_model
 
+        if self.initial_accuracy > self.OPTIMIZATION_ACCURACY_GOAL:
+            self.logger.debug('initial learning successful, aborting')
+            return initial_model
+
         self.lr_learner.convergence_decimals = 1  # converge fast, we refine accuracy later
         self.rounds = 0
         model_improved = True
