@@ -78,7 +78,7 @@ class CorrelationAttack(Learner):
         self.lr_learner.convergence_decimals = 1  # converge fast, we refine accuracy later
         self.rounds = 0
         model_improved = True
-        while self.rounds < 5 and model_improved:
+        while self.rounds < 2 and model_improved:
             self.rounds += 1
             model_improved = False
             # Try all permutations with high initial accuracy and see if any of them lead to a good finial result
@@ -99,7 +99,7 @@ class CorrelationAttack(Learner):
                     self.best_model = model
                     model_improved = True
                     self.best_accuracy = accuracy
-                    self.best_iteration = (self.rounds * iteration) + 1
+                    self.best_iteration = iteration
                 else:
                     self.logger.debug('Learning after permuting lead to accuracy %.2f, no improvement :-(' % accuracy)
 

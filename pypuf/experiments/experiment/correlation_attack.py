@@ -91,5 +91,5 @@ class ExperimentCorrelationAttack(Experiment):
             #','.join(map(str, self.model.weight_array.flatten() / norm(self.model.weight_array.flatten()))),
             '',
             self.learner.best_iteration,
-            self.learner.rounds + 1,
+            self.learner.rounds,
         )
