@@ -8,6 +8,7 @@ from numpy import count_nonzero, array, append, zeros, vstack, mean, prod, ones,
 from numpy import sum as np_sum
 from numpy import abs as np_abs
 from numpy.random import RandomState
+from random import sample
 
 RESULT_TYPE = 'int8'
 
@@ -282,3 +283,22 @@ class TrainingSet():
         self.challenges = array(list(sample_inputs(instance.n, N, random_instance=random_instance)))
         self.responses = instance.eval(self.challenges)
         self.N = N
+
+    def random_subset(self, N):
+        if N < 1:
+            N = int(self.N * N)
+
+        set = sample(range(self.N), N)
+
+        class TrainingSubSet(TrainingSet):
+            def __init__(self, instance):
+                self.instance = instance
+                self.challenges = None
+                self.responses = None
+                self.N = None
+
+        subset = TrainingSubSet(self.instance)
+        subset.challenges = self.challenges[set]
+        subset.responses = self.responses[set]
+        subset.N = N
+        return subset
