@@ -17,6 +17,7 @@ class CorrelationAttack(Learner):
     OPTIMIZATION_ACCURACY_LOWER_BOUND = .65
     OPTIMIZATION_ACCURACY_UPPER_BOUND = .95
     OPTIMIZATION_ACCURACY_GOAL = .98
+    OPTIMIZATION_ROUNDS_MAX = 3
 
     def __init__(self, n, k,
                  training_set, validation_set,
@@ -56,7 +57,7 @@ class CorrelationAttack(Learner):
         self.rounds = 0
 
         assert n in (64, 128), 'Correlation attack for %i bit is currently not supported.' % n
-        assert validation_set.N >= 500, 'Validation set should contain at least 200 challenges'
+        assert validation_set.N >= 500 * (self.OPTIMIZATION_ROUNDS_MAX + 1), 'Validation set should contain at least 500 challenges for each round plus 500 extra.'
 
         self.correlation_permutations = loadmat(
             'correlation_permutations_lightweight_secure_original_%i_10.mat' % n
@@ -65,7 +66,7 @@ class CorrelationAttack(Learner):
     def learn(self):
         # Find any model
         initial_model = self.lr_learner.learn()
-        self.initial_accuracy = 1 - set_dist(initial_model, self.validation_set)
+        self.initial_accuracy = 1 - set_dist(initial_model, self.validation_set.block_subset(0, self.OPTIMIZATION_ROUNDS_MAX + 1))
         self.initial_iterations = self.lr_learner.iteration_count
 
         self.best_model = initial_model
@@ -78,7 +79,7 @@ class CorrelationAttack(Learner):
         self.lr_learner.convergence_decimals = 1  # converge fast, we refine accuracy later
         self.rounds = 0
         model_improved = True
-        while self.rounds < 1 and model_improved:
+        while self.rounds < self.OPTIMIZATION_ROUNDS_MAX and model_improved:
             self.rounds += 1
             model_improved = False
             # Try all permutations with high initial accuracy and see if any of them lead to a good finial result
@@ -91,7 +92,7 @@ class CorrelationAttack(Learner):
             self.logger.debug('Trying %i permuted weights.' % len(adopted_weights))
             for (iteration, weights) in enumerate(adopted_weights):
                 model = self.lr_learner.learn(init_weight_array=weights)
-                accuracy = 1 - set_dist(model, self.validation_set.random_subset(.5))
+                accuracy = 1 - set_dist(model, self.validation_set.block_subset(self.rounds, self.OPTIMIZATION_ROUNDS_MAX + 1))
                 self.logger.debug('With a permutation, after restarting the learning we achieved accuracy %.2f!' % accuracy)
                 if accuracy > 0.2 + 0.8 * self.best_accuracy:  # demand some "substantial" improvement of accuracy
                                                                # what substantial means becomes weaker as we approach

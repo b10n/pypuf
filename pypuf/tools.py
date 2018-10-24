@@ -287,9 +287,15 @@ class TrainingSet():
     def random_subset(self, N):
         if N < 1:
             N = int(self.N * N)
+        return self.subset(sample(range(self.N), N))
 
-        set = sample(range(self.N), N)
+    def block_subset(self, idx, total):
+        return self.subset(range(
+            int(idx / total * self.N),
+            int((idx + 1) / total * self.N)
+        ))
 
+    def subset(self, subset_slice):
         class TrainingSubSet(TrainingSet):
             def __init__(self, instance):
                 self.instance = instance
@@ -298,7 +304,8 @@ class TrainingSet():
                 self.N = None
 
         subset = TrainingSubSet(self.instance)
-        subset.challenges = self.challenges[set]
-        subset.responses = self.responses[set]
-        subset.N = N
+        subset.challenges = self.challenges[subset_slice]
+        subset.responses = self.responses[subset_slice]
+        subset.N = len(subset_slice)
         return subset
+
