@@ -84,7 +84,7 @@ class CorrelationAttack(Learner):
             # Try all permutations with high initial accuracy and see if any of them lead to a good finial result
             adopted_weights = self.find_high_accuracy_weight_permutations(
                 initial_model.weight_array,
-                0.075 + 0.85 * self.initial_accuracy  # allow some accuracy loss by permuting
+                1.2 * self.best_accuracy - .2         # allow some accuracy loss by permuting
                                                       # the higher the initial accuracy, the higher the loss we allow
                                                       # result will never be below 0.925
             )
@@ -103,7 +103,7 @@ class CorrelationAttack(Learner):
                 else:
                     self.logger.debug('Learning after permuting lead to accuracy %.2f, no improvement :-(' % accuracy)
 
-                if accuracy > 0.075 + 0.85 * self.OPTIMIZATION_ACCURACY_GOAL:
+                if accuracy > 1.2 * self.OPTIMIZATION_ACCURACY_GOAL - .2:
                     self.lr_learner.convergence_decimals = 2
                     model = self.lr_learner.learn(init_weight_array=model.weight_array)
                     accuracy = 1 - set_dist(model, self.validation_set)
