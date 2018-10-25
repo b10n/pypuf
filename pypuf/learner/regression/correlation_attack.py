@@ -104,7 +104,8 @@ class CorrelationAttack(Learner):
                 model = self.lr_learner.learn(init_weight_array=weights, eta_minus=.8, eta_plus=1.1)
                 accuracy = 1 - set_dist(model, self.validation_set.block_subset(self.rounds, self.OPTIMIZATION_ROUNDS_MAX + 1))
                 self.logger.debug('With a permutation, after restarting the learning we achieved accuracy %.2f!' % accuracy)
-                if accuracy > 0.2 + 0.8 * self.best_accuracy:  # demand some "substantial" improvement of accuracy
+                if accuracy > 0.2 + 0.8 * self.initial_accuracy\
+                        and accuracy > self.best_accuracy:  # demand some "substantial" improvement of accuracy
                                                                # what substantial means becomes weaker as we approach
                                                                # perfect accuracy
                     self.permuted_model = LTFArray(weight_array=original_permuted_weights, transform=LTFArray.transform_id, combiner=LTFArray.combiner_xor)
