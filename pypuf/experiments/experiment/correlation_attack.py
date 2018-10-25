@@ -76,7 +76,7 @@ class ExperimentCorrelationAttack(Experiment):
             # seed_instance  seed_model n      k      N      time   initial_iterations initial_accuracy best_accuracy
             '0x%x\t'        '0x%x\t'   '%i\t' '%i\t' '%i\t' '%f\t' '%i\t'             '%f\t'           '%f\t'
                 # accuracy model values  best_iteration  rounds   permutations  instance weights (norm.)  initial weights permuted weights final weights
-                '%f\t'    '%s\t'        '%i\t'           '%i\t'   '%s\t'        '%s\t'                    '%s\t'                '%s\t'           '%s\t',
+                '%f\t'    '%s\t'        '%i\t'           '%i\t'   '%s\t'        '%s\t'                    '%s\t'                '%s\t'           '%s',
             self.seed_instance,
             self.seed_model,
             self.n,
