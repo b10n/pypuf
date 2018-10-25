@@ -17,7 +17,7 @@ class CorrelationAttack(Learner):
     OPTIMIZATION_ACCURACY_LOWER_BOUND = .65
     OPTIMIZATION_ACCURACY_UPPER_BOUND = .95
     OPTIMIZATION_ACCURACY_GOAL = .98
-    OPTIMIZATION_ROUNDS_MAX = 3
+    OPTIMIZATION_ROUNDS_MAX = 1
 
     def __init__(self, n, k,
                  training_set, validation_set,
@@ -53,8 +53,12 @@ class CorrelationAttack(Learner):
         
         self.initial_accuracy = .5
         self.initial_iterations = 0
+        self.initial_model = None
         self.best_iteration = 0
         self.rounds = 0
+        self.permutations = None
+        self.permuted_model = None
+        self.best_permutation = None
 
         assert n in (64, 128), 'Correlation attack for %i bit is currently not supported.' % n
         assert validation_set.N >= 500 * (self.OPTIMIZATION_ROUNDS_MAX + 1), 'Validation set should contain at least 500 challenges for each round plus 500 extra.'
@@ -65,7 +69,7 @@ class CorrelationAttack(Learner):
 
     def learn(self):
         # Find any model
-        initial_model = self.lr_learner.learn()
+        self.initial_model = initial_model = self.lr_learner.learn()
         self.initial_accuracy = 1 - set_dist(initial_model, self.validation_set.block_subset(0, self.OPTIMIZATION_ROUNDS_MAX + 1))
         self.initial_iterations = self.lr_learner.iteration_count
 
@@ -95,12 +99,15 @@ class CorrelationAttack(Learner):
             )
             self.logger.debug('Trying %i permuted weights.' % len(adopted_weights))
             for (iteration, weights) in enumerate(adopted_weights):
-                model = self.lr_learner.learn(init_weight_array=weights)
+                original_permuted_weights = empty((self.k, self.n + 1))
+                original_permuted_weights[::] = weights
+                model = self.lr_learner.learn(init_weight_array=weights, eta_minus=.8, eta_plus=1.1)
                 accuracy = 1 - set_dist(model, self.validation_set.block_subset(self.rounds, self.OPTIMIZATION_ROUNDS_MAX + 1))
                 self.logger.debug('With a permutation, after restarting the learning we achieved accuracy %.2f!' % accuracy)
                 if accuracy > 0.2 + 0.8 * self.best_accuracy:  # demand some "substantial" improvement of accuracy
                                                                # what substantial means becomes weaker as we approach
                                                                # perfect accuracy
+                    self.permuted_model = LTFArray(weight_array=original_permuted_weights, transform=LTFArray.transform_id, combiner=LTFArray.combiner_xor)
                     self.best_model = model
                     model_improved = True
                     self.best_accuracy = accuracy
@@ -149,6 +156,7 @@ class CorrelationAttack(Learner):
 
         # return the 4k permutations with the highest initial accuracy
         high_accuracy_permutations.sort(key=lambda x: -x['accuracy'])
+        self.permutations = [ item['permutation'] for item in high_accuracy_permutations ][:2*self.k]
         return [ item['weights'] for item in high_accuracy_permutations ][:2*self.k]
 
     def adopt_weights(self, weights, permutation):

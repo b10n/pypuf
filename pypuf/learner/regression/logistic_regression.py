@@ -239,7 +239,7 @@ class LogisticRegression(Learner):
         ])
         return ret
 
-    def learn(self, init_weight_array=None):
+    def learn(self, init_weight_array=None, eta_minus=0.5, eta_plus=1.2):
         """
         Compute a model according to the given LTF Array parameters and training set.
         Note that this function can take long to return.
@@ -278,7 +278,7 @@ class LogisticRegression(Learner):
         if init_weight_array is not None:
             model.weight_array = init_weight_array
 
-        updater = self.RPropModelUpdate(model)
+        updater = self.RPropModelUpdate(model, eta_minus=eta_minus, eta_plus=eta_plus)
         converged = False
         distance = 1
         self.iteration_count = 0

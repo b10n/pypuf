@@ -51,6 +51,7 @@ class ExperimentCorrelationAttack(Experiment):
             weight_array=LTFArray.normal_weights(self.n, self.k, random_instance=self.instance_prng),
             transform=self.transformation,
             combiner=self.combiner,
+            bias=0.0
         )
         self.learner = CorrelationAttack(
             n=self.n,
@@ -68,11 +69,14 @@ class ExperimentCorrelationAttack(Experiment):
         """
         assert self.model is not None
 
+        def model_csv(model):
+            return ','.join(map(str, model.weight_array.flatten() / norm(model.weight_array.flatten())))
+
         self.result_logger.info(
             # seed_instance  seed_model n      k      N      time   initial_iterations initial_accuracy best_accuracy
             '0x%x\t'        '0x%x\t'   '%i\t' '%i\t' '%i\t' '%f\t' '%i\t'             '%f\t'           '%f\t'
-                # accuracy model values  best_iteration  rounds
-                '%f\t'    '%s\t'        '%i\t'              '%i',
+                # accuracy model values  best_iteration  rounds   permutations  instance weights (norm.)  initial weights permuted weights final weights
+                '%f\t'    '%s\t'        '%i\t'           '%i\t'   '%s\t'        '%s\t'                    '%s\t'                '%s\t'           '%s\t',
             self.seed_instance,
             self.seed_model,
             self.n,
@@ -88,8 +92,13 @@ class ExperimentCorrelationAttack(Experiment):
                 min(10000, 2 ** self.n),
                 random_instance=self.distance_prng,
             ),
-            #','.join(map(str, self.model.weight_array.flatten() / norm(self.model.weight_array.flatten()))),
+            #model_csv(self.model),
             '',
             self.learner.best_iteration,
             self.learner.rounds,
+            ','.join(map(str, self.learner.permutations)) if self.learner.permutations else '',
+            model_csv(self.instance),
+            model_csv(self.learner.initial_model),
+            model_csv(self.learner.permuted_model) if self.learner.permuted_model else '',
+            model_csv(self.model)
         )
