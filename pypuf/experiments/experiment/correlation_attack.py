@@ -57,7 +57,7 @@ class ExperimentCorrelationAttack(Experiment):
             n=self.n,
             k=self.k,
             training_set=TrainingSet(instance=self.instance, N=self.N, random_instance=self.challenge_prng),
-            validation_set=TrainingSet(instance=self.instance, N=self.N // 2, random_instance=self.distance_prng),
+            validation_set=TrainingSet(instance=self.instance, N=self.N // 10, random_instance=self.distance_prng),
             weights_prng=self.model_prng,
             logger=self.progress_logger,
         )
