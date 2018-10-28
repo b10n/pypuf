@@ -4,6 +4,7 @@ from pypuf.experiments.experiment.base import Experiment
 from pypuf.learner.regression.correlation_attack import CorrelationAttack
 from pypuf.simulation.arbiter_based.ltfarray import LTFArray
 from pypuf.tools import TrainingSet, approx_dist
+from math import ceil
 
 
 class ExperimentCorrelationAttack(Experiment):
@@ -56,8 +57,8 @@ class ExperimentCorrelationAttack(Experiment):
         self.learner = CorrelationAttack(
             n=self.n,
             k=self.k,
-            training_set=TrainingSet(instance=self.instance, N=self.N, random_instance=self.challenge_prng),
-            validation_set=TrainingSet(instance=self.instance, N=self.N // 10, random_instance=self.distance_prng),
+            training_set=TrainingSet(instance=self.instance, N=int(ceil(self.N / 1.1)), random_instance=self.challenge_prng),
+            validation_set=TrainingSet(instance=self.instance, N=int((self.N / 1.1) // 10), random_instance=self.distance_prng),
             weights_prng=self.model_prng,
             logger=self.progress_logger,
         )
