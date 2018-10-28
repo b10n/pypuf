@@ -141,6 +141,8 @@ class LogisticRegression(Learner):
         self.converged = False
         self.logger = logger
         self.bias = True
+        self.logger_callback = None
+        self.updater = None
 
 
         if self.bias:
@@ -239,7 +241,7 @@ class LogisticRegression(Learner):
         ])
         return ret
 
-    def learn(self, init_weight_array=None, eta_minus=0.5, eta_plus=1.2):
+    def learn(self, init_weight_array=None, eta_minus=0.5, eta_plus=1.2, refresh_updater=True):
         """
         Compute a model according to the given LTF Array parameters and training set.
         Note that this function can take long to return.
@@ -255,11 +257,12 @@ class LogisticRegression(Learner):
             if self.logger is None:
                 return
             self.logger.debug(
-                '%i\t%f\t%f\t%s' % (
+                '%i\t%f\t%f\t%s\t%s' % (
                     self.iteration_count,
                     distance,
-                    norm(updater.step),
-                    0#','.join(map(str, model.weight_array.flatten()))
+                    norm(self.updater.step),
+                    0,#','.join(map(str, model.weight_array.flatten()))
+                    self.logger_callback(model) if self.logger_callback else '-'
                 )
             )
 
@@ -278,7 +281,8 @@ class LogisticRegression(Learner):
         if init_weight_array is not None:
             model.weight_array = init_weight_array
 
-        updater = self.RPropModelUpdate(model, eta_minus=eta_minus, eta_plus=eta_plus)
+        if refresh_updater:
+            self.updater = self.RPropModelUpdate(model, eta_minus=eta_minus, eta_plus=eta_plus)
         converged = False
         distance = 1
         self.iteration_count = 0
@@ -288,10 +292,10 @@ class LogisticRegression(Learner):
 
             # compute gradient & update model
             gradient = self.gradient(model)
-            model.weight_array += updater.update(gradient)
+            model.weight_array += self.updater.update(gradient)
 
             # check convergence
-            converged = norm(updater.step) < 10**-self.convergence_decimals
+            converged = norm(self.updater.step) < 10**-self.convergence_decimals
 
             # log
             log_state()
