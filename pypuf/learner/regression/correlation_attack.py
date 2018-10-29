@@ -103,7 +103,7 @@ class CorrelationAttack(Learner):
             round_initial_accuracy = self.best_accuracy
             self.logger.debug('################################ round %i #####################' % self.rounds)
             # Try all permutations with high initial accuracy and see if any of them lead to a good finial result
-            permutations = self.find_high_accuracy_weight_permutations_iteratively(
+            permutations = self.find_high_accuracy_weight_permutations(
                 initial_model.weight_array,
                 1.2 * self.best_accuracy - .2         # allow some accuracy loss by permuting
                                                       # the higher the initial accuracy, the higher the loss we allow
