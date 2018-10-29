@@ -134,7 +134,7 @@ class CorrelationAttack(Learner):
                 combiner=LTFArray.combiner_xor,
                 bias=adopted_weights[:,-1:]
             )
-            accuracy = 1 - set_dist(adopted_instance, self.training_set.random_subset(.5))
+            accuracy = 1 - set_dist(adopted_instance, self.validation_set)
             self.logger.debug('For permutation %s, we have accuracy %.4f' % (permutation, accuracy))
             if accuracy >= threshold:
                 high_accuracy_permutations.append(
