@@ -64,6 +64,14 @@ class LTFArray(Simulation):
         tools.assert_result_type(res)
         return res
 
+    @staticmethod
+    def transform_none(challenges, k):
+        """
+        Use this "transform" for pre-transformed challenges. It does nothing.
+        :return: exactly the input challenges object
+        """
+        return challenges
+
     @classmethod
     def transform_atf(cls, challenges, k):
         """
