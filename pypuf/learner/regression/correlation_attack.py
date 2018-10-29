@@ -91,10 +91,12 @@ class CorrelationAttack(Learner):
 
         if self.initial_accuracy < self.OPTIMIZATION_ACCURACY_LOWER_BOUND:
             self.logger.debug('initial learning below threshold, aborting')
+            self.best_model.transform = LTFArray.transform_lightweight_secure_original
             return initial_model
 
         if self.initial_accuracy > self.OPTIMIZATION_ACCURACY_GOAL:
             self.logger.debug('initial learning successful, aborting')
+            self.best_model.transform = LTFArray.transform_lightweight_secure_original
             return initial_model
 
         improvement = True
