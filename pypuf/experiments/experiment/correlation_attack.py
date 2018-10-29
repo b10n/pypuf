@@ -50,14 +50,14 @@ class ExperimentCorrelationAttack(Experiment):
 
     def run(self):
         # TODO input transformation is computed twice. Add a shortcut to recycle results from the first computation
-        self.training_set = TrainingSet(instance=self.instance, N=int(ceil(self.N / 1.1)), random_instance=self.challenge_prng)
-        self.validation_set = TrainingSet(instance=self.instance, N=int((self.N / 1.1) // 10), random_instance=self.distance_prng)
         self.instance = LTFArray(
             weight_array=LTFArray.normal_weights(self.n, self.k, random_instance=self.instance_prng),
             transform=self.transformation,
             combiner=self.combiner,
             bias=0.0
         )
+        self.training_set = TrainingSet(instance=self.instance, N=int(ceil(self.N / 1.1)), random_instance=self.challenge_prng)
+        self.validation_set = TrainingSet(instance=self.instance, N=int((self.N / 1.1) // 10), random_instance=self.distance_prng)
         self.learner = CorrelationAttack(
             n=self.n,
             k=self.k,
