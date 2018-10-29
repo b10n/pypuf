@@ -45,9 +45,13 @@ class ExperimentCorrelationAttack(Experiment):
         self.instance = None
         self.learner = None
         self.model = None
+        self.training_set = None
+        self.validation_set = None
 
     def run(self):
         # TODO input transformation is computed twice. Add a shortcut to recycle results from the first computation
+        self.training_set = TrainingSet(instance=self.instance, N=int(ceil(self.N / 1.1)), random_instance=self.challenge_prng)
+        self.validation_set = TrainingSet(instance=self.instance, N=int((self.N / 1.1) // 10), random_instance=self.distance_prng)
         self.instance = LTFArray(
             weight_array=LTFArray.normal_weights(self.n, self.k, random_instance=self.instance_prng),
             transform=self.transformation,
@@ -57,8 +61,8 @@ class ExperimentCorrelationAttack(Experiment):
         self.learner = CorrelationAttack(
             n=self.n,
             k=self.k,
-            training_set=TrainingSet(instance=self.instance, N=int(ceil(self.N / 1.1)), random_instance=self.challenge_prng),
-            validation_set=TrainingSet(instance=self.instance, N=int((self.N / 1.1) // 10), random_instance=self.distance_prng),
+            training_set=self.training_set,
+            validation_set=self.validation_set,
             weights_prng=self.model_prng,
             logger=self.progress_logger,
         )
@@ -82,7 +86,7 @@ class ExperimentCorrelationAttack(Experiment):
             self.seed_model,
             self.n,
             self.k,
-            self.learner.validation_set.N + self.learner.training_set.N,
+            self.validation_set.N + self.training_set.N,
             self.measured_time,
             self.learner.initial_iterations,
             self.learner.initial_accuracy,
