@@ -67,6 +67,7 @@ class CorrelationAttack(Learner):
         self.best_permutation = None
         self.best_model = None
         self.best_accuracy = None
+        self.rounds = 0
 
         assert n in (64, 128), 'Correlation attack for %i bit is currently not supported.' % n
         assert validation_set.N >= 1000, 'Validation set should contain at least 1000 challenges.'
@@ -79,6 +80,8 @@ class CorrelationAttack(Learner):
         # Find any model
         #self.lr_learner.convergence_decimals = 1.5
         self.initial_model = initial_model = self.lr_learner.learn()
+        self.logger.debug('initial weights for corr attack:')
+        self.logger.debug(','.join(map(str, initial_model.weight_array.flatten())))
         self.initial_accuracy = 1 - set_dist(initial_model, self.validation_set_fast.block_subset(0, 2))
         self.initial_iterations = self.lr_learner.iteration_count
         initial_updater = self.lr_learner.updater
@@ -94,41 +97,53 @@ class CorrelationAttack(Learner):
             self.logger.debug('initial learning successful, aborting')
             return initial_model
 
-        # Try all permutations with high initial accuracy and see if any of them lead to a good finial result
-        permutations = self.find_high_accuracy_weight_permutations_iteratively(
-            initial_model.weight_array,
-            1.2 * self.best_accuracy - .2         # allow some accuracy loss by permuting
-                                                  # the higher the initial accuracy, the higher the loss we allow
-                                                  # result will never be below 0.925
-        )
-        self.logger.debug('Trying %i permuted weights.' % len(permutations))
-        for (iteration, permutation) in enumerate(permutations):
-            weights = permutation['weights']
-            original_permuted_weights = empty((self.k, self.n + 1))
-            original_permuted_weights[::] = weights
-            self.lr_learner.updater = deepcopy(initial_updater)
-            self.lr_learner.updater.step_size *= 10
-            model = self.lr_learner.learn(init_weight_array=weights, refresh_updater=False)
-            accuracy = 1 - set_dist(model, self.validation_set_fast.block_subset(1, 2))
-            self.logger.debug('With permutation %s, after restarting the learning we achieved accuracy %.4f -> %.4f!' % (permutation['permutation'], permutation['accuracy'], accuracy))
-            if accuracy > 0.2 + 0.8 * self.initial_accuracy\
-                    and accuracy > self.best_accuracy:  # demand some "substantial" improvement of accuracy
-                                                           # what substantial means becomes weaker as we approach
-                                                           # perfect accuracy
-                self.permuted_model = LTFArray(weight_array=original_permuted_weights, transform=LTFArray.transform_none, combiner=LTFArray.combiner_xor)
-                self.best_model = model
-                self.best_accuracy = accuracy
-                self.best_iteration = iteration
-            else:
-                self.logger.debug('Learning after permuting lead to accuracy %.2f, no improvement :-(' % accuracy)
+        improvement = True
+        self.rounds = 0
+        while improvement:
+            round_initial_accuracy = self.best_accuracy
+            self.logger.debug('################################ round %i #####################' % self.rounds)
+            # Try all permutations with high initial accuracy and see if any of them lead to a good finial result
+            permutations = self.find_high_accuracy_weight_permutations_iteratively(
+                initial_model.weight_array,
+                1.2 * self.best_accuracy - .2         # allow some accuracy loss by permuting
+                                                      # the higher the initial accuracy, the higher the loss we allow
+                                                      # result will never be below 0.925
+            )
+            self.logger.debug('Trying %i permuted weights.' % len(permutations))
+            for (iteration, permutation) in enumerate(permutations):
+                weights = permutation['weights']
+                original_permuted_weights = empty((self.k, self.n + 1))
+                original_permuted_weights[::] = weights
+                self.lr_learner.updater = deepcopy(initial_updater)
+                self.lr_learner.updater.step_size *= 10
+                model = self.lr_learner.learn(init_weight_array=weights, refresh_updater=False)
+                accuracy = 1 - set_dist(model, self.validation_set_fast.block_subset(1, 2))
+                self.logger.debug('With permutation %s, after restarting the learning we achieved accuracy %.4f -> %.4f!' % (permutation['permutation'], permutation['accuracy'], accuracy))
+                if accuracy > 0.1 + 0.9 * self.initial_accuracy\
+                        and accuracy > self.best_accuracy:  # demand some "substantial" improvement of accuracy
+                                                               # what substantial means becomes weaker as we approach
+                                                               # perfect accuracy
+                    self.permuted_model = LTFArray(weight_array=original_permuted_weights, transform=LTFArray.transform_none, combiner=LTFArray.combiner_xor)
+                    self.best_model = model
+                    self.best_accuracy = accuracy
+                    self.best_iteration = iteration
+                else:
+                    self.logger.debug('Learning after permuting lead to accuracy %.2f, no improvement :-(' % accuracy)
 
-            if accuracy > self.OPTIMIZATION_ACCURACY_GOAL:
-                self.logger.debug('Found a model with accuracy better than %.2f, refine accuracy then abort.' %
-                                  self.OPTIMIZATION_ACCURACY_GOAL)
-                self.best_model = model
-                return model
+                if accuracy > self.OPTIMIZATION_ACCURACY_GOAL:
+                    self.logger.debug('Found a model with accuracy better than %.2f, refine accuracy then abort.' %
+                                      self.OPTIMIZATION_ACCURACY_GOAL)
+                    self.best_model = model
+                    self.best_model.transform = LTFArray.transform_lightweight_secure_original
+                    return model
 
-        self.logger.debug('After trying all permutations, we found a model with accuracy %.2f.' % self.best_accuracy)
+            if self.best_accuracy > .1 + .9 * round_initial_accuracy:
+                # accuracy improved by more than just measurement error (supposedly)
+                improvement = True
+
+            self.logger.debug('After trying all permutations, we found a model with accuracy %.2f.' % self.best_accuracy)
+            self.rounds += 1
+
         self.best_model.transform = LTFArray.transform_lightweight_secure_original
         return self.best_model
 
