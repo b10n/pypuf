@@ -171,7 +171,7 @@ class CorrelationAttack(Learner):
         # return the 4k permutations with the highest initial accuracy
         high_accuracy_permutations.sort(key=lambda x: -x['accuracy'])
         self.permutations = [ item['permutation'] for item in high_accuracy_permutations ][:2*self.k]
-        return [ item['weights'] for item in high_accuracy_permutations ][:2*self.k]
+        return high_accuracy_permutations[:2*self.k]
 
     def find_high_accuracy_weight_permutations_iteratively(self, weights, threshold):
         """
