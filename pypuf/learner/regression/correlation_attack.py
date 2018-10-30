@@ -145,6 +145,7 @@ class CorrelationAttack(Learner):
 
             self.logger.debug('After trying all permutations, we found a model with accuracy %.2f.' % self.best_accuracy)
             self.rounds += 1
+            improvement = False
 
         self.best_model.transform = LTFArray.transform_lightweight_secure_original
         return self.best_model
