@@ -4,6 +4,7 @@ the input transformation.
 """
 from copy import deepcopy, copy
 from itertools import permutations
+from math import ceil, factorial
 from scipy.io import loadmat
 from numpy.random import RandomState
 from numpy import empty, roll
@@ -105,7 +106,7 @@ class CorrelationAttack(Learner):
             round_initial_accuracy = self.best_accuracy
             self.logger.debug('################################ round %i #####################' % self.rounds)
             # Try all permutations with high initial accuracy and see if any of them lead to a good finial result
-            permutations = self.find_high_accuracy_weight_permutations(
+            permutations = self.find_high_accuracy_weight_permutations_iteratively(
                 initial_model.weight_array,
                 1.2 * self.best_accuracy - .2         # allow some accuracy loss by permuting
                                                       # the higher the initial accuracy, the higher the loss we allow
@@ -190,16 +191,18 @@ class CorrelationAttack(Learner):
                 'weights': weights,
             },
         ]
+        counter = 0
         for r in range(self.k - 1):
             self.logger.debug('--------- fitting pos %i (based on %i perms) -----------' % (r, len(next_round_high_accuracy_permutations)))
+            permutation_count = len(next_round_high_accuracy_permutations)
             high_accuracy_permutations = next_round_high_accuracy_permutations
             next_round_high_accuracy_permutations = []
             for high_accuracy_permutation in high_accuracy_permutations:
                 permutation = high_accuracy_permutation['permutation']
                 old_accuracy = high_accuracy_permutation['accuracy']
-                found_derivative = False
                 self.logger.debug('  -> permutation %s with acc %0.4f' % (permutation, old_accuracy))
-                for i in range(r + 1, self.k):
+                group_permutations = []
+                for i in range(r, self.k):
                     permutation = copy(high_accuracy_permutation['permutation'])
                     (permutation[r], permutation[i]) = (permutation[i], permutation[r])
 
@@ -210,26 +213,23 @@ class CorrelationAttack(Learner):
                         combiner=LTFArray.combiner_xor,
                         bias=adopted_weights[:, -1:]
                     )
+                    counter += 1
                     new_accuracy = 1 - set_dist(adopted_instance, self.validation_set_fast)
-                    if new_accuracy >= old_accuracy - 0.01\
-                            and new_accuracy >= threshold - 0.01:
-                        self.logger.debug('      ✓ Swapping %i and %i (result: %s) we have accuracy %0.4f' % (r, i, permutation, new_accuracy))
-                        found_derivative = True
-                        next_round_high_accuracy_permutations.append(
-                            {
-                                'accuracy': new_accuracy,
-                                'permutation': permutation,
-                                'weights': adopted_instance.weight_array,
-                            }
-                        )
-                    else:
-                        self.logger.debug('      ✗ Swapping %i and %i (result: %s) we have accuracy %0.4f' % (r, i, permutation, new_accuracy))
+                    self.logger.debug('      ✓ Swapping %i and %i (result: %s) we have accuracy %0.4f' % (r, i, permutation, new_accuracy))
+                    group_permutations.append(
+                        {
+                            'accuracy': new_accuracy,
+                            'permutation': permutation,
+                            'weights': adopted_instance.weight_array,
+                        }
+                    )
+                group_permutations.sort(key=lambda x: -x['accuracy'])
+                next_round_high_accuracy_permutations.extend(group_permutations[:ceil(len(group_permutations) / 2)])
 
-                if not found_derivative:
-                    self.logger.debug('      ✓ No swapping for %s found, keep it for next round.' % high_accuracy_permutation['permutation'])
-                    next_round_high_accuracy_permutations.append(high_accuracy_permutation)
+                next_round_high_accuracy_permutations.sort(key=lambda x: -x['accuracy'])
 
-        return next_round_high_accuracy_permutations
+        print('counter: %i, %f' % (counter, counter / factorial(self.k)))
+        return high_accuracy_permutations[:2 * self.k]
 
 
     def adopt_weights(self, weights, permutation):
