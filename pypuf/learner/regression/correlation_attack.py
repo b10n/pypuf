@@ -229,7 +229,7 @@ class CorrelationAttack(Learner):
                 next_round_high_accuracy_permutations.sort(key=lambda x: -x['accuracy'])
 
         print('counter: %i, %f' % (counter, counter / factorial(self.k)))
-        return high_accuracy_permutations[:2 * self.k]
+        return high_accuracy_permutations[:5 * self.k]
 
 
     def adopt_weights(self, weights, permutation):
