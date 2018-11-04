@@ -106,7 +106,7 @@ class CorrelationAttack(Learner):
             round_initial_accuracy = self.best_accuracy
             self.logger.debug('################################ round %i #####################' % self.rounds)
             # Try all permutations with high initial accuracy and see if any of them lead to a good finial result
-            permutations = self.find_high_accuracy_weight_permutations_iteratively(
+            permutations = self.find_high_accuracy_weight_permutations(
                 initial_model.weight_array,
                 1.2 * self.best_accuracy - .2         # allow some accuracy loss by permuting
                                                       # the higher the initial accuracy, the higher the loss we allow
@@ -174,8 +174,8 @@ class CorrelationAttack(Learner):
 
         # return the 4k permutations with the highest initial accuracy
         high_accuracy_permutations.sort(key=lambda x: -x['accuracy'])
-        self.permutations = [ item['permutation'] for item in high_accuracy_permutations ][:2*self.k]
-        return high_accuracy_permutations[:2*self.k]
+        self.permutations = [ item['permutation'] for item in high_accuracy_permutations ][:5*self.k]
+        return high_accuracy_permutations[:5*self.k]
 
     def find_high_accuracy_weight_permutations_iteratively(self, weights, threshold):
         """
