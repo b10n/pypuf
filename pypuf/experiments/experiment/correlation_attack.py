@@ -3,8 +3,10 @@ from numpy.linalg import norm
 from pypuf.experiments.experiment.base import Experiment
 from pypuf.learner.regression.correlation_attack import CorrelationAttack
 from pypuf.simulation.arbiter_based.ltfarray import LTFArray
-from pypuf.tools import TrainingSet, approx_dist
+from pypuf.tools import TrainingSet, approx_dist, set_dist
 from math import ceil
+from itertools import permutations
+from scipy.stats import pearsonr
 
 
 class ExperimentCorrelationAttack(Experiment):
@@ -80,8 +82,8 @@ class ExperimentCorrelationAttack(Experiment):
         self.result_logger.info(
             # seed_instance  seed_model n      k      N      time   initial_iterations initial_accuracy best_accuracy
             '0x%x\t'        '0x%x\t'   '%i\t' '%i\t' '%i\t' '%f\t' '%i\t'             '%f\t'           '%f\t'
-                # accuracy model values  best_iteration  rounds   permutations  instance weights (norm.)  initial weights permuted weights final weights
-                '%f\t'    '%s\t'        '%i\t'           '%s\t'   '%s\t'        '%s\t'                    '%s\t'                '%s\t'           '%s',
+                # accuracy correct_iteration  best_iteration  rounds  permutation_accuracy   permutations  instance weights (norm.)  initial weights permuted weights final weights
+                '%f\t'    '%s\t'               '%i\t'         '%s\t'       '%s\t'             '%s\t'        '%s\t'                    '%s\t'                '%s\t'           '%s',
             self.seed_instance,
             self.seed_model,
             self.n,
@@ -97,13 +99,51 @@ class ExperimentCorrelationAttack(Experiment):
                 min(10000, 2 ** self.n),
                 random_instance=self.distance_prng,
             ),
-            #model_csv(self.model),
-            '',
+            str(self.find_correct_permutation(self.learner.initial_model.weight_array)) if self.learner.initial_accuracy > self.learner.OPTIMIZATION_ACCURACY_LOWER_BOUND else '',
             self.learner.best_iteration,
             self.learner.rounds,
+            str(self.permuted_model_validation_set_accuracy()) if self.learner.permuted_model else '',
             ','.join(map(str, self.learner.permutations)) if self.learner.permutations else '',
             model_csv(self.instance),
             model_csv(self.learner.initial_model),
             model_csv(self.learner.permuted_model) if self.learner.permuted_model else '',
             model_csv(self.model)
         )
+
+    def find_correct_permutation(self, weights):
+        instance_weights = self.instance.weight_array
+
+        max_correlation = 0
+        best_permutation = None
+        for permutation in list(permutations(range(self.k))):
+            adopted_model_weights = self.learner.adopt_weights(weights, permutation)
+            assert adopted_model_weights.shape == (self.k, self.n + 1), \
+                'adopted weights shape is %s but was expected to be (%i, %i)' % (
+                    str(adopted_model_weights.shape),
+                    self.k,
+                    self.n + 1
+                )
+            assert instance_weights.shape == (self.k, self.n + 1)
+            correlation = [
+                abs(pearsonr(
+                    abs(adopted_model_weights[l] / norm(adopted_model_weights[l])),
+                    abs(instance_weights[l] / norm(instance_weights[l]))
+                )[0])
+                for l in range(self.k)
+            ]
+
+            if sum(correlation) > max_correlation:
+                max_correlation = sum(correlation)
+                best_permutation = permutation
+
+        return best_permutation
+
+    def permuted_model_validation_set_accuracy(self):
+        adopted_instance = LTFArray(
+            weight_array=self.learner.permuted_model.weight_array[:, :-1],
+            transform=LTFArray.transform_none,  # note that we're using validation_set_fast below
+            combiner=LTFArray.combiner_xor,
+            bias=self.learner.permuted_model.weight_array[:, -1:]
+        )
+
+        return 1 - set_dist(adopted_instance, self.learner.validation_set_fast)
