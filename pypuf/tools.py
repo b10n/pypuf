@@ -61,7 +61,7 @@ def byte_to_array_1_1(byte):
 
 
 def substitute_aes(challenge):
-    assert all((challenge==-1) | (challenge==1)), 'The input must be a {1,-1}-array!'
+    assert all((challenge == -1) | (challenge == 1)), 'The input must be a {1,-1}-array!'
     n = len(challenge)
     num = int(n / 8)
     s = copy(challenge)

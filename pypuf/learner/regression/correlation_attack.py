@@ -221,7 +221,6 @@ class CorrelationAttack(Learner):
         print('counter: %i, %f' % (counter, counter / factorial(self.k)))
         return high_accuracy_permutations[:5 * self.k]
 
-
     def adopt_weights(self, weights, permutation):
         adopted_weights = empty(weights.shape)
         for l in range(self.k):

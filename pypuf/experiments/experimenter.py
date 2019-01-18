@@ -28,7 +28,7 @@ class Experimenter(object):
     Coordinated, parallel execution of Experiments with logging.
     """
 
-    def __init__(self, log_name, experiments, cpu_limit=2**16):
+    def __init__(self, log_name, experiments, cpu_limit=1):     # 2**16
         """
         :param experiments: A list of pypuf.experiments.experiment.base.Experiment
         :param log_name: A unique file path where to output should be logged.

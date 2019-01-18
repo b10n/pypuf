@@ -140,10 +140,9 @@ class LogisticRegression(Learner):
         self.transformed_challenges = self.transformation(self.training_set.challenges, k)
         self.converged = False
         self.logger = logger
-        self.bias = True
+        self.bias = bias
         self.logger_callback = None
         self.updater = None
-
 
         if self.bias:
             s = self.transformed_challenges = append_last(self.transformed_challenges, int8(1))
@@ -175,7 +174,7 @@ class LogisticRegression(Learner):
         """
 
         # compute model responses
-        model_responses = model.ltf_eval(self.transformed_challenges[:,:,:-1])  # cut off that bias 1
+        model_responses = model.ltf_eval(self.transformed_challenges)
         combined_model_responses = self.combiner(model_responses)
         self.sign_combined_model_responses = sign(combined_model_responses)
 
@@ -275,7 +274,7 @@ class LogisticRegression(Learner):
                                                  self.weights_prng),
             transform=self.transformation,
             combiner=self.combiner,
-            bias=0.0,
+            bias=None,
         )
 
         if init_weight_array is not None:

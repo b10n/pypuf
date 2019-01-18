@@ -37,6 +37,13 @@ class Experiment(object):
         """
         raise NotImplementedError('users must define analysis to use this base class')
 
+    def prepare(self):
+        """
+        Used for preparation work that shall be not timed.
+        Executed just before run()
+        """
+        pass
+
     @abc.abstractmethod
     def run(self):
         """
@@ -58,6 +65,7 @@ class Experiment(object):
         file_handler = logging.FileHandler('%s.log' % self.log_name, mode='w')
         file_handler.setLevel(logging.DEBUG)
         self.progress_logger.addHandler(file_handler)
+        self.prepare()
         start_time = time.time()
         self.run()
         self.measured_time = time.time() - start_time

@@ -3,13 +3,12 @@ This module provides several different implementations of arbiter PUF simulation
 model is the core of each simulation class.
 """
 from numpy import sum as np_sum
-from numpy import prod, shape, sign, array, transpose, concatenate, dstack, swapaxes, sqrt, amax, tile, append, int8
+from numpy import prod, shape, sign, array, transpose, concatenate
+from numpy import dstack, swapaxes, sqrt, amax, tile, append, int8
 from numpy.random import RandomState
 from pypuf import tools
 from pypuf.simulation.base import Simulation
 import pypuf_helper as ph
-
-import numpy as np
 
 
 class LTFArray(Simulation):
@@ -540,24 +539,10 @@ class LTFArray(Simulation):
 
         return result
 
-
     @staticmethod
-    def transform_aes_sbox(challenges, atf=False):
-        result = array([tools.substitute_aes(c) for c in challenges]).astype(int8)
-
-        if atf:
-            # Perform atf transform
-            n = len(challenges[0])
-            result = transpose(
-                array([
-                    prod(result[:, :, i:], 2)
-                    for i in range(n)
-                ], dtype=int8),
-                (1, 2, 0)
-            )
-
+    def transform_aes_sbox(challenges, k):
+        result = array([k * [tools.substitute_aes(c)] for c in challenges]).astype(int8)
         return result
-
 
     @staticmethod
     def generate_permutation_transform(permutations, atf=False):
@@ -611,7 +596,6 @@ class LTFArray(Simulation):
 
         transform.__name__ = 'transform_permutations' + ('_plus_atf_' if atf else '')
         return transform
-
 
     @staticmethod
     def generate_stacked_transform(transform_1, puf_count, transform_2):
@@ -845,7 +829,7 @@ class LTFArray(Simulation):
             self.n,
             inputs.shape[2],
         )
-        if self.bias is not None:
+        if self.bias:
             assert self.weight_array.shape == (self.k, self.n + 1), 'weight array should have shape %s, but had %s' % (
                 (self.k, self.n + 1),
                 self.weight_array.shape,
@@ -877,7 +861,7 @@ class NoisyLTFArray(LTFArray):
         return sqrt(n) * sigma_weight * noisiness
 
     def __init__(self, weight_array, transform, combiner, sigma_noise,
-                 random_instance=RandomState(), bias=None):
+                 random_instance=RandomState(), bias=False):
         """
         Initializes LTF array like in LTFArray and uses the provided
         PRNG instance for drawing noise values. If no PRNG provided, a
@@ -914,7 +898,7 @@ class SimulationMajorityLTFArray(LTFArray):
     """
 
     def __init__(self, weight_array, transform, combiner, sigma_noise,
-                 random_instance_noise=RandomState(), bias=None, vote_count=1):
+                 random_instance_noise=RandomState(), bias=False, vote_count=1):
         """
         :param weight_array: array of floats with shape(k,n)
                             Array of weights which represents the PUF stage delays.
