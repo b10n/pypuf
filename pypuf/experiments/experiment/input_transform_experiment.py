@@ -103,7 +103,7 @@ class InputTransformExperiment(Experiment):
         if self.transform == LTFArray.transform_random:
             transform = 'random'
         self.result_logger.info(
-            '0x%x\t0x%x\t%i\t%i\t%i\t%f\t%s\t%f\t%s\t%s\t%s',
+            '0x%x\t0x%x\t%i\t%i\t%i\t%f\t%s\t%s\t%s\t%s\t%s',
             self.seed_instance,
             self.seed_challenges,
             self.n,
