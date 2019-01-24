@@ -102,6 +102,7 @@ class InputTransformExperiment(Experiment):
             transform = 'fixed_permutation'
         if self.transform == LTFArray.transform_random:
             transform = 'random'
+        distance = 1.0 - tools.approx_dist(self.instance, self.model, min(1000, 2 ** self.n), self.prng_c)
         self.result_logger.info(
             '0x%x\t0x%x\t%i\t%i\t%i\t%f\t%s\t%s\t%s\t%s\t%s',
             self.seed_instance,
@@ -109,7 +110,7 @@ class InputTransformExperiment(Experiment):
             self.n,
             self.k,
             self.num,
-            1.0 - tools.approx_dist(self.instance, self.model, min(1000, 2 ** self.n), self.prng_c),
+            max(distance, 1 - distance),
             ','.join(map(str, self.individual_accs())),
             self.measured_time,
             transform,

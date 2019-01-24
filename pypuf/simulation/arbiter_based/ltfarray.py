@@ -542,12 +542,24 @@ class LTFArray(Simulation):
     @staticmethod
     def transform_aes_sbox(challenges, k):
         result = array([k * [tools.substitute_aes(c)] for c in challenges]).astype(int8)
+
+        # Perform atf transform
+        result = transpose(
+            array([
+                prod(result[:, :, i:], 2)
+                for i in range(shape(result)[2])
+            ], dtype=int8),
+            (1, 2, 0)
+        )
+
         return result
 
     @staticmethod
     def generate_permutation_transform(permutations, atf=False):
         """
         Returns an input transformation that uses a given permutation
+        :param permutations: array
+                    2d-array that defines the permutation for each PUF chain
         :param atf: boolean
                     Perform ATF transform after permuting
         :return:  A function: array of int with shape(N,n), int number of PUFs k -> shape(N,k,n)

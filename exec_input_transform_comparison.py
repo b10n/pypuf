@@ -40,7 +40,7 @@ def main(args):
     seed_i = RandomState().randint(2**32)
     seed_c = RandomState().randint(2**32)
     if len(args) >= 7:
-        repeat = args[6]
+        repeat = int(args[6])
         if len(args) >= 8:
             suffix = str(args[7])
             if len(args) >= 9:
@@ -60,27 +60,27 @@ def main(args):
     log_name = 'trafos_k%i_n%i' % (k, n) + suffix
     params = list()
     for i in range(start, end, step):
-        for j in range(repeat):
-            params.append([k, n, LTFArray.transform_id, LTFArray.combiner_xor, i])
-            params.append([k, n, LTFArray.transform_atf, LTFArray.combiner_xor, i])
-            params.append([k, n, LTFArray.transform_aes_sbox, LTFArray.combiner_xor, i])
-            params.append([k, n, LTFArray.transform_lightweight_secure_original, LTFArray.combiner_xor, i])
-            if n == 64:
-                params.append([k, n, LTFArray.transform_fixed_permutation, LTFArray.combiner_xor, i])
-            params.append([k, n, LTFArray.transform_random, LTFArray.combiner_xor, i])
+        params.append([k, n, LTFArray.transform_id, LTFArray.combiner_xor, i])
+        params.append([k, n, LTFArray.transform_atf, LTFArray.combiner_xor, i])
+        params.append([k, n, LTFArray.transform_aes_sbox, LTFArray.combiner_xor, i])
+        params.append([k, n, LTFArray.transform_lightweight_secure_original, LTFArray.combiner_xor, i])
+        if n == 64:
+            params.append([k, n, LTFArray.transform_fixed_permutation, LTFArray.combiner_xor, i])
+        params.append([k, n, LTFArray.transform_random, LTFArray.combiner_xor, i])
 
     for i in range(len(params)):
-        experiment = InputTransformExperiment(
-            log_name=log_name + '_%i' % i,
-            k=params[i][0],
-            n=params[i][1],
-            transform=params[i][2],
-            combiner=params[i][3],
-            num=params[i][4],
-            seed_instance=RandomState(seed_i).randint(2**32),
-            seed_challenges=RandomState(seed_c).randint(2**32)
-        )
-        experiments.append(experiment)
+        for j in range(repeat):
+            experiment = InputTransformExperiment(
+                log_name=log_name + '_%i' % i,
+                k=params[i][0],
+                n=params[i][1],
+                transform=params[i][2],
+                combiner=params[i][3],
+                num=params[i][4],
+                seed_instance=RandomState((seed_i + j) % 2**32).randint(2**32),
+                seed_challenges=RandomState((seed_c + j) % 2**32).randint(2**32)
+            )
+            experiments.append(experiment)
 
     experimenter = Experimenter(experiments=experiments, log_name=log_name)
     experimenter.run()
