@@ -26,7 +26,7 @@ for (n, k, N) in configurations:
                 log_name=log,
                 n=n,
                 k=k,
-                N=int(N * 10e6),
+                N=int(N * 1e6),
                 seed_simulation=0x1 + i,
                 seed_model=0x1000 + i,
                 transformation=LTFArray.transform_id,
