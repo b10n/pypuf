@@ -104,8 +104,8 @@ class ExperimentMLP(Experiment):
         assert self.model is not None
 
         self.result_logger.info(
-            # seed_instance  seed_model i      n      k      N      trans  comb   iter   time   accuracy  model values
-            '0x%x\t'        '0x%x\t'   '%i\t' '%i\t' '%i\t' '%i\t' '%s\t' '%s\t' '%i\t' '%f\t' '%f\t'    ,#'%s',
+            # seed_instance  seed_model i      n      k      N      trans  comb   iter   time   accuracy  loss func # model values
+            '0x%x\t'        '0x%x\t'   '%i\t' '%i\t' '%i\t' '%i\t' '%s\t' '%s\t' '%i\t' '%f\t' '%f\t'     '%s',     # '%s',
             self.seed_simulation,
             self.seed_model,
             0,  # restart count, kept for compatibility to old log files
@@ -122,6 +122,7 @@ class ExperimentMLP(Experiment):
                 min(1000, 2 ** self.n),
                 random_instance=RandomState(seed=self.seed_accuracy)
             ),
+            ','.join(map(str, self.learner.clf.loss_curve_)),
             # ';'.join(
             #     [
             #         ','.join(['%.12f' % x for x in coef.flatten() / norm(coef.flatten())])
