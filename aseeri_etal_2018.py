@@ -34,6 +34,7 @@ for (n, k, N) in configurations:
                 seed_challenge=0x2 + i,
                 seed_accuracy=0x3 + i,
                 batch_size=1000 if k < 6 else 10000,
+                iteration_limit=10,
             )
         )
 

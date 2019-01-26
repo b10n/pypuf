@@ -27,7 +27,6 @@ class MLP(Learner):
         self.responses = self.simulation.eval(self.challenges)
         self.clf = MLPClassifier(
             solver='adam',
-            alpha=1e-5,
             hidden_layer_sizes=(2**self.k, 2**self.k, 2**self.k),
             random_state=self.seed_model,
             learning_rate_init=10e-3,

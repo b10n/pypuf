@@ -13,7 +13,7 @@ class ExperimentMLP(Experiment):
 
     def __init__(
             self, log_name, n, k, N, seed_simulation, seed_model, transformation, combiner, seed_challenge=0x5A551,
-            seed_accuracy=0xB055, batch_size=1000
+            seed_accuracy=0xB055, batch_size=1000, iteration_limit=1000
     ):
         """
         :param log_name: string
@@ -66,6 +66,7 @@ class ExperimentMLP(Experiment):
         self.challenge_prng = RandomState(self.seed_challenges)
         self.seed_accuracy = seed_accuracy
         self.batch_size = batch_size
+        self.iteration_limit = iteration_limit
         self.simulation = None
         self.learner = None
         self.model = None
@@ -84,10 +85,10 @@ class ExperimentMLP(Experiment):
             n=self.n,
             k=self.k,
             simulation=self.simulation,
-            iteration_limit=100,
             seed_challenges=self.seed_challenges,
             seed_model=self.seed_model,
             batch_size=self.batch_size,
+            iteration_limit=self.iteration_limit,
         )
         self.learner.prepare()
 
@@ -119,7 +120,7 @@ class ExperimentMLP(Experiment):
             1.0 - tools.approx_dist(
                 self.simulation,
                 self.model,
-                min(1000, 2 ** self.n),
+                min(10000, 2 ** self.n),
                 random_instance=RandomState(seed=self.seed_accuracy)
             ),
             ','.join(map(str, self.learner.clf.loss_curve_)),
