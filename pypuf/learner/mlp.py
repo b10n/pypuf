@@ -35,7 +35,8 @@ class MLP(Learner):
             shuffle=False,
             activation='relu',
             max_iter=self.iteration_limit,
-            tol=5 * 1e-2,
+            tol=0.01,
+            n_iter_no_change=1,
         )
 
         class MLPResult:
