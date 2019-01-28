@@ -139,6 +139,7 @@ def plot_params_histograms(parameters, names):
         plt.ylabel(names[i])
     plt.show()
 
+
 def group_by_hypervalues(data, param):
     dict = {
         'num': (6, 6),
@@ -194,6 +195,7 @@ def group_by_hypervalues(data, param):
         for j in range(len(values2)):
             tuples.append((values1[i], values2[j]))
     return res, tuples
+
 
 def plot_hyperparams(path):
     df = pd.read_csv(path, sep='\t', header=None)
