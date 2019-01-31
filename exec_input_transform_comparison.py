@@ -62,7 +62,7 @@ def main(args):
     for i in range(start, end, step):
         params.append([k, n, LTFArray.transform_id, LTFArray.combiner_xor, i])
         params.append([k, n, LTFArray.transform_atf, LTFArray.combiner_xor, i])
-        params.append([k, n, LTFArray.transform_aes_sbox, LTFArray.combiner_xor, i])
+        params.append([k, n, LTFArray.transform_aes_substitution, LTFArray.combiner_xor, i])
         params.append([k, n, LTFArray.transform_lightweight_secure_original, LTFArray.combiner_xor, i])
         if n == 64:
             params.append([k, n, LTFArray.transform_fixed_permutation, LTFArray.combiner_xor, i])

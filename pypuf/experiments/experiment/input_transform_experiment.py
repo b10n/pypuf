@@ -94,7 +94,7 @@ class InputTransformExperiment(Experiment):
             transform = 'id'
         if self.transform == LTFArray.transform_atf:
             transform = 'atf'
-        if self.transform == LTFArray.transform_aes_sbox:
+        if self.transform == LTFArray.transform_aes_substitution:
             transform = 'aes'
         if self.transform == LTFArray.transform_lightweight_secure_original:
             transform = 'lw_secure'

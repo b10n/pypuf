@@ -540,7 +540,7 @@ class LTFArray(Simulation):
         return result
 
     @staticmethod
-    def transform_aes_sbox(challenges, k):
+    def transform_aes_substitution(challenges, k):
         result = array([k * [tools.substitute_aes(c)] for c in challenges]).astype(int8)
 
         # Perform atf transform
