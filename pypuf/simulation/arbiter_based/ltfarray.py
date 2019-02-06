@@ -9,8 +9,6 @@ from pypuf import tools
 from pypuf.simulation.base import Simulation
 import pypuf_helper as ph
 
-import numpy as np
-
 
 class LTFArray(Simulation):
     """
