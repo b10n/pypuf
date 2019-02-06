@@ -3,7 +3,8 @@ Module for Learning Arbiter PUFs with Logistic Regression.
 Heavily based on the work of Rührmair, Ulrich, et al. "Modeling attacks on physical unclonable functions." Proceedings
 of the 17th ACM conference on Computer and communications security. ACM, 2010.
 """
-from numpy import sign, dot, exp, minimum, dtype, sign, dot, exp, array, seterr, minimum, abs, full, amin, amax, ones
+from numpy import sign, dot, exp, minimum, dtype, sign, dot, exp, array, seterr, minimum, abs, full, amin, amax, ones, \
+    int8
 from numpy import abs as np_abs
 from numpy.random import RandomState
 from numpy.linalg import norm
@@ -143,7 +144,7 @@ class LogisticRegression(Learner):
 
 
         if self.bias:
-            s = self.transformed_challenges = append_last(self.transformed_challenges, 1)
+            s = self.transformed_challenges = append_last(self.transformed_challenges, int8(1))
 
         #assert self.n == len(self.training_set.challenges[0]) why do we need this? It does not work with bias=True
 

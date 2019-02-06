@@ -3,7 +3,7 @@ This module provides several different implementations of arbiter PUF simulation
 model is the core of each simulation class.
 """
 from numpy import sum as np_sum
-from numpy import prod, shape, sign, array, transpose, concatenate, swapaxes, sqrt, amax, tile, append
+from numpy import prod, shape, sign, array, transpose, concatenate, swapaxes, sqrt, amax, tile, append, int8
 from numpy.random import RandomState
 from pypuf import tools
 from pypuf.simulation.base import Simulation
@@ -571,7 +571,7 @@ class LTFArray(Simulation):
                 (self.k, self.n + 1),
                 self.weight_array.shape,
             )
-            responses = ph.eval(tools.append_last(inputs, 1), self.weight_array)
+            responses = ph.eval(tools.append_last(inputs, int8(1)), self.weight_array)
             #inputs_and_bias = tools.append_last(inputs, 1)
             #responses = transpose(array([dot(inputs_and_bias[:,l], self.weight_array[l]) for l in range(self.k)]))
         else:
