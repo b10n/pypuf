@@ -113,6 +113,10 @@ def approx_dist(instance1, instance2, num, random_instance=RandomState()):
     return (num - count_nonzero(instance1.eval(inputs) == instance2.eval(inputs))) / num
 
 
+def set_dist(instance, set):
+    return (set.N - count_nonzero(instance.eval(set.challenges) == set.responses)) / set.N
+
+
 def approx_fourier_coefficient(s, training_set):
     """
     Approximate the Fourier coefficient of a function on the subset `s`
@@ -260,7 +264,33 @@ def assert_result_type(arr):
     assert arr.dtype == dtype(RESULT_TYPE), 'Must be an array of {0}. Got array of {1}'.format(RESULT_TYPE, arr.dtype)
 
 
-class TrainingSet():
+class ChallengeResponseSet():
+
+    def __init__(self, challenges, responses):
+        self.challenges = challenges
+        self.responses = responses
+        assert len(self.challenges) == len(self.responses)
+        self.N = len(self.challenges)
+
+    def random_subset(self, N):
+        if N < 1:
+            N = int(self.N * N)
+        return self.subset(sample(range(self.N), N))
+
+    def block_subset(self, idx, total):
+        return self.subset(range(
+            int(idx / total * self.N),
+            int((idx + 1) / total * self.N)
+        ))
+
+    def subset(self, subset_slice):
+        return ChallengeResponseSet(
+            challenges=self.challenges[subset_slice],
+            responses=self.responses[subset_slice]
+        )
+
+
+class TrainingSet(ChallengeResponseSet):
     """
     Basic data structure to hold a collection of challenge response pairs.
     Note that this is, strictly speaking, not a set.
@@ -276,6 +306,9 @@ class TrainingSet():
                                 PRNG which is used to draft challenges.
         """
         self.instance = instance
-        self.challenges = sample_inputs(instance.n, N, random_instance=random_instance)
-        self.responses = instance.eval(self.challenges)
-        self.N = N
+        challenges = array(list(sample_inputs(instance.n, N, random_instance=random_instance)))
+        super().__init__(
+            challenges=challenges,
+            responses=instance.eval(challenges)
+        )
+
