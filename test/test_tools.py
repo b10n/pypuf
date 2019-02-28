@@ -68,8 +68,8 @@ class TestAppendLast(unittest.TestCase):
 
         challenge_seed = 0xAB17D
 
-        training_set_1 = TrainingSet.random_set(instance=instance, N=N, random_instance=RandomState(challenge_seed))
-        training_set_2 = TrainingSet.random_set(instance=instance, N=N, random_instance=RandomState(challenge_seed))
+        training_set_1 = TrainingSet(instance=instance, N=N, random_instance=RandomState(challenge_seed))
+        training_set_2 = TrainingSet(instance=instance, N=N, random_instance=RandomState(challenge_seed))
 
         self.assertTrue(
             array_equal(training_set_1.challenges, training_set_2.challenges),
@@ -160,7 +160,7 @@ class TestInputFunctions(unittest.TestCase):
         """This method checks reading challenge-response pairs from a file."""
         n, k, N = 128, 1, 10
         instance = LTFArray(LTFArray.normal_weights(n, k), LTFArray.transform_atf, LTFArray.combiner_xor)
-        original = TrainingSet.random_set(instance, N)
+        original = TrainingSet(instance, N)
 
         f = NamedTemporaryFile('w')
         for vals in column_stack((original.challenges, original.responses)):

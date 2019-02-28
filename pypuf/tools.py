@@ -261,8 +261,7 @@ def approx_stabilities(instance, num, reps, random_instance=RandomState()):
 
     challenges = sample_inputs(instance.n, num, random_instance)
     responses = zeros((reps, num))
-    for i in range(reps) 
-:
+    for i in range(reps):
         responses[i, :] = instance.eval(challenges)
     return 0.5 + 0.5 * np_abs(np_sum(responses, axis=0)) / reps
 
@@ -330,7 +329,7 @@ def parse_file(filename, n, start=1, num=0, in_11_notation=False):
         challenges = transform_challenge_01_to_11(challenges)
         responses = transform_challenge_01_to_11(responses)
 
-    return TrainingSet(challenges, responses, num)
+    return ChallengeResponseSet(challenges, responses)
 
 
 class ChallengeResponseSet:
@@ -404,4 +403,4 @@ class TrainingSet(ChallengeResponseSet):
         super().__init__(
             challenges=challenges,
             responses=instance.eval(challenges)
-)
+        )

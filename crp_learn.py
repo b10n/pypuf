@@ -1,5 +1,5 @@
 """
-This module is used for learning a PUF from known CRPs.
+This module is used for learning a PUF from known challenge-response pairs.
 """
 import argparse
 from pypuf import tools
@@ -7,6 +7,9 @@ from pypuf.learner.regression.logistic_regression import LogisticRegression
 from pypuf.simulation.arbiter_based.ltfarray import LTFArray
 
 def uint(val):
+    """
+    Assures that the passed integer is positive.
+    """
     ival = int(val)
     if ival <= 0:
         raise argparse.ArgumentTypeError('{} is not a positive integer'.format(val))
@@ -15,7 +18,7 @@ def uint(val):
 
 def main():
     """
-    Learn and evaluate a PUF.
+    Learns and evaluates a PUF.
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('n', type=uint,
