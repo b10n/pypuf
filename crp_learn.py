@@ -6,6 +6,7 @@ from pypuf import tools
 from pypuf.learner.regression.logistic_regression import LogisticRegression
 from pypuf.simulation.arbiter_based.ltfarray import LTFArray
 
+
 def uint(val):
     """
     Assures that the passed integer is positive.
