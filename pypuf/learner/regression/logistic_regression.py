@@ -221,6 +221,8 @@ class LogisticRegression(Learner):
             model_gradient = model_gradient_xor
         elif compare_functions(self.combiner, LTFArray.combiner_ip_mod2):
             model_gradient = model_gradient_ip_mod2
+        elif compare_functions(self.combiner, LTFArray.combiner_majority_vote):	# SCARY!!! < ---------
+            model_gradient = model_gradient_xor
         else:
             raise Exception('No gradient function known for combiner %s' % self.combiner)
 
