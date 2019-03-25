@@ -64,7 +64,8 @@ class LTFArray(Simulation):
     def combiner_ip_mod2(cls, responses):
         """
         combines output responses with the inner product mod 2 operation
-        :param responses: a array with a number of vectors of single LTF results
+        :param responses: Array of int of float with shape(N,k,n)
+                          An Array with a number of vectors of single LTF results
         :return: array of float or int shape(N)
                  Array of responses for the N different challenges.
         """
@@ -78,6 +79,18 @@ class LTFArray(Simulation):
                 ]),
             1
         )
+
+    @classmethod
+    def combiner_majority_vote(cls, responses):
+        """
+        combines output responses with the majority vote operation
+        :param responses: a array with a number of vectors of single LTF results
+        :return: array of float or int shape(N)
+                 Array of responses for the N different challenges.
+        """
+        k = len(responses[1])
+        assert k % 2 == 1, 'Majority Vote is only defined for odd k.'
+        return sign(np_sum(responses, axis=1))
 
     @classmethod
     def transform_id(cls, challenges, k):
