@@ -31,22 +31,22 @@ def main():
                         help='number of CRPs to use for training')
     parser.add_argument('num_te', type=uint,
                         help='number of CRPs to use for testing')
-	parser.add_argument('combiner', type=str,
+    parser.add_argument('combiner', type=str,
 						help='used to combine the output bits to a single bit. Currently available: "ip_mod2", "xor", "majority_vote"')
     args = parser.parse_args()
     
-	n = args.n
-	k = args.k
-	num_tr = args.num_tr
-	num_te = args.num_te
-	combiner = 'LTFArray.combiner_' + args.combiner
+    n = args.n
+    k = args.k
+    num_tr = args.num_tr
+    num_te = args.num_te
+    combiner = 'LTFArray.combiner_' + args.combiner
 	
     # create a simulation with random (Gaussian) weights
     # for 64-bit 2-XOR
     instance = LTFArray(
         weight_array=LTFArray.normal_weights(n, k),
         transform=LTFArray.transform_atf,
-        combiner=LTFArray.combiner_xor,
+        combiner=LTFArray.combiner_majority_vote,
     )
 
     # create the learner
@@ -55,7 +55,7 @@ def main():
         n = n,
         k = k,
         transformation=LTFArray.transform_atf,
-        combiner=LTFArray.combiner_xor,
+        combiner=LTFArray.combiner_majority_vote,
     )
 
     # learn and test the model
